@@ -1,0 +1,136 @@
+.login-page {
+  min-height: 100vh;
+  background: var(--color-background, #F4F6FB);
+  display: flex;
+  flex-direction: column;
+}
+
+.login-hero {
+  background: linear-gradient(135deg, #2F5FFF, #5B82FF);
+  padding: 32px 24px 40px;
+  border-radius: 0 0 32px 32px;
+  color: #fff;
+}
+
+.login-hero h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 16px 0 6px;
+}
+
+.login-hero p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+}
+
+.login-form {
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.login-form .form-group {
+  margin-bottom: 20px;
+}
+
+.login-form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1D29;
+  margin-bottom: 8px;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 14px;
+}
+
+.input-with-icon .input-icon {
+  position: absolute;
+  left: 14px;
+  color: #8A8FA3;
+  pointer-events: none;
+}
+
+.input-with-icon .input {
+  width: 100%;
+  padding: 14px 14px 14px 44px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.input-with-icon .input:focus {
+  border-color: #2F5FFF;
+}
+
+.input-suffix-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #8A8FA3;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.login-forgot {
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+.login-forgot .link-btn {
+  background: none;
+  border: none;
+  color: #2F5FFF;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-submit {
+  width: 100%;
+  height: 52px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #8A8FA3;
+}
+
+.login-footer-link {
+  color: #2F5FFF;
+  font-weight: 600;
+}
