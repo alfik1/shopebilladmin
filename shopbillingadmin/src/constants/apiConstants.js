@@ -1,6 +1,6 @@
 // src/constants/apiConstants.js
 
-export const BASE_URL = 'https://api.yourdomain.com';
+export const BASE_URL = 'http://34.171.55.230';
 
 export const API_ENDPOINTS = {
   AUTH: {
