@@ -1,6 +1,7 @@
-// src/constants/apiConstants.js
 
-export const BASE_URL = 'http://34.171.55.230';
+ // src/constants/apiConstants.js
+
+export const BASE_URL = 'https://34.171.55.230';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -11,7 +12,8 @@ export const API_ENDPOINTS = {
   },
 
   HOME: {
-    FOR_MONTH: (month) => `${BASE_URL}/api/mobile/home/?month=${month}`,
+    FOR_MONTH: (month) =>
+      `${BASE_URL}/api/mobile/home/?month=${encodeURIComponent(month)}`,
   },
 
   HISTORY: {
@@ -36,11 +38,12 @@ export const API_ENDPOINTS = {
     LIST:   `${BASE_URL}/api/mobile/employees/`,
     DETAIL: (id) => `${BASE_URL}/api/mobile/employees/${id}/`,
     SALARY: (id) => `${BASE_URL}/api/mobile/employees/${id}/salary/`,
-    SALARY_HISTORY: (id) => `${BASE_URL}/api/mobile/employees/${id}/salary-history/`,
+    SALARY_HISTORY: (id) =>
+      `${BASE_URL}/api/mobile/employees/${id}/salary-history/`,
   },
 };
 
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN:  'access_token',
+  ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
 };
