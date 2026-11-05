@@ -90,6 +90,9 @@ export default function Profile() {
     logout();
   };
 
+  // Only active employees are shown in the Employee Cards list
+  const activeEmployees = employees.filter((e) => e.isActive);
+
   const totalMonthlySalary = employees.reduce((sum, e) => sum + e.monthlySalary, 0);
 
   if (loading) {
@@ -134,7 +137,7 @@ export default function Profile() {
           <div className="summary-icon" style={{ background: `${COLORS.primary}1F` }}>
             <IconProfile size={18} color={COLORS.primary} />
           </div>
-          <div className="summary-value">{employees.length}</div>
+          <div className="summary-value">{activeEmployees.length}</div>
           <div className="summary-label">Employees</div>
         </div>
 
@@ -156,7 +159,7 @@ export default function Profile() {
         <div className="home-center" style={{ minHeight: 120 }}>
           <div className="loading-spinner" />
         </div>
-      ) : employees.length === 0 ? (
+      ) : activeEmployees.length === 0 ? (
         <div className="empty-state">
           <p>No employees found</p>
           <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => navigate(APP_ROUTES.addEmployee)}>
@@ -165,7 +168,7 @@ export default function Profile() {
         </div>
       ) : (
         <div className="tile-list">
-          {employees.map((e) => (
+          {activeEmployees.map((e) => (
             <div className="employee-card" key={e.id}>
               <div
                 className="employee-avatar clickable"
