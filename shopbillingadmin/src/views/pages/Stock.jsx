@@ -85,8 +85,8 @@ export default function Stock() {
           <div className="summary-icon" style={{ background: `${COLORS.success}1F` }}>
             <IconTrendingUp size={18} color={COLORS.success} />
           </div>
-          <div className="summary-value">{data.totalSoldToday}</div>
-          <div className="summary-label">Sold Today</div>
+          <div className="summary-value">{data.totalSold}</div>
+          <div className="summary-label">Total Sold</div>
         </div>
       </div>
 
@@ -130,7 +130,7 @@ export default function Stock() {
                   />
                 </div>
 
-                <div className="stock-sold-today">Sold today: {item.soldToday}</div>
+                <div className="stock-sold-today">Total sold: {item.totalSold}</div>
               </div>
             );
           })}

@@ -7,17 +7,6 @@ import { stockResponseFromApi } from '../models/stockModel';
 export class StockError extends Error {}
 
 // ------------------------------------------------------------
-// What to show after the "/" in "remaining / total"
-//
-//   'startOfDay' -> stock_qty + sold_today (stock at start of day)
-//                   ignores target_qty, so wrong backend targets
-//                   no longer affect the screen
-//   'target'     -> target_qty from the API (original behaviour)
-//   'stock'      -> same as remaining (bar always full and green)
-// ------------------------------------------------------------
-const TOTAL_MODE = 'startOfDay';
-
-// ------------------------------------------------------------
 // Category -> icon background key (reuses Home's palette)
 // ------------------------------------------------------------
 const iconBackgroundKeyForStock = (icon) => {
@@ -30,36 +19,16 @@ const iconBackgroundKeyForStock = (icon) => {
 };
 
 // ------------------------------------------------------------
-// Total shown after the "/"
+// Total stock ever = stock left + all-time sold (total_sold)
+// Shown after the "/" in "remaining / total"
 // ------------------------------------------------------------
-const totalFor = (item) => {
-  if (TOTAL_MODE === 'target') return item.targetQty;
-  if (TOTAL_MODE === 'stock') return item.stockQty;
-
-  // 'startOfDay'
-  return item.stockQty + item.soldToday;
-};
+const totalFor = (item) => item.stockQty + item.totalSold;
 
 // ------------------------------------------------------------
-// Progress ratio (0..1)
+// Progress ratio (0..1) = stock left / total stock ever
 // ------------------------------------------------------------
 const ratioFor = (item) => {
-  if (TOTAL_MODE === 'target') {
-    if (item.percentOfTarget !== null) {
-      return Math.min(Math.max(item.percentOfTarget / 100, 0), 1);
-    }
-
-    if (item.targetQty <= 0) return 0;
-
-    return Math.min(Math.max(item.stockQty / item.targetQty, 0), 1);
-  }
-
-  if (TOTAL_MODE === 'stock') {
-    return item.stockQty > 0 ? 1 : 0;
-  }
-
-  // 'startOfDay'
-  const total = item.stockQty + item.soldToday;
+  const total = totalFor(item);
 
   if (total <= 0) return 0;
 
@@ -70,28 +39,9 @@ const ratioFor = (item) => {
 // Progress color key: 'error' | 'warning' | 'success'
 // ------------------------------------------------------------
 const progressColorKeyFor = (item) => {
-  if (TOTAL_MODE === 'stock') return 'success';
+  if (totalFor(item) > 0) {
+    const ratio = ratioFor(item);
 
-  if (TOTAL_MODE === 'target') {
-    if (item.percentOfTarget !== null) {
-      if (item.percentOfTarget <= 20) return 'error';
-      if (item.percentOfTarget <= 50) return 'warning';
-      return 'success';
-    }
-
-    if (item.targetQty > 0) {
-      const ratio = item.stockQty / item.targetQty;
-      if (ratio <= 0.2) return 'error';
-      if (ratio <= 0.5) return 'warning';
-    }
-
-    return 'success';
-  }
-
-  // 'startOfDay'
-  const ratio = ratioFor(item);
-
-  if (item.stockQty + item.soldToday > 0) {
     if (ratio <= 0.2) return 'error';
     if (ratio <= 0.5) return 'warning';
   }
@@ -131,8 +81,7 @@ const mapStockItems = (levels) =>
       iconBackgroundKey: iconBackgroundKeyForStock(item.icon),
       remaining: item.stockQty,
       total: totalFor(item),
-      soldToday: item.soldToday,
-      percentOfTarget: item.percentOfTarget,
+      totalSold: item.totalSold,
       ratio: ratioFor(item),
       colorKey: progressColorKeyFor(item),
     }))
@@ -148,7 +97,6 @@ export const getStock = async () => {
   console.log('========================================');
   console.log('[StockController] GET STOCK');
   console.log('[StockController] URL:', url);
-  console.log('[StockController] TOTAL_MODE:', TOTAL_MODE);
   console.log('========================================');
 
   try {
@@ -174,28 +122,36 @@ export const getStock = async () => {
 
     const raw = stockResponseFromApi(json);
 
-    // ---------- DEBUG: categories where the API target looks wrong ----------
-    const suspicious = raw.stockLevels
-      .filter((i) => i.targetQty !== i.stockQty + i.soldToday)
-      .map((i) => ({
+    // ---------- DEBUG: is total_sold coming from the API? ----------
+    const hasTotalSold = Array.isArray(json?.stock_levels)
+      && json.stock_levels.some((i) => i?.total_sold !== undefined);
+
+    if (!hasTotalSold) {
+      console.warn(
+        '[StockController] total_sold is missing in stock_levels. Total sold will show 0.'
+      );
+    }
+
+    // ---------- DEBUG: stock + total_sold vs API target_qty ----------
+    console.table(
+      raw.stockLevels.map((i) => ({
         category: i.category,
         stock_qty: i.stockQty,
-        sold_today: i.soldToday,
-        expected_target: i.stockQty + i.soldToday,
+        total_sold: i.totalSold,
+        'stock + total_sold': i.stockQty + i.totalSold,
         api_target_qty: i.targetQty,
-      }));
+      }))
+    );
 
-    if (suspicious.length > 0) {
-      console.warn(
-        '[StockController] target_qty differs from stock_qty + sold_today for:'
-      );
-      console.table(suspicious);
-    }
+    const totalSoldAll = raw.stockLevels.reduce(
+      (sum, i) => sum + i.totalSold,
+      0
+    );
 
     const result = {
       date: raw.date,
       totalRemaining: raw.totalStockLeft,
-      totalSoldToday: raw.soldToday,
+      totalSold: totalSoldAll,
       items: mapStockItems(raw.stockLevels),
     };
 

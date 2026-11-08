@@ -30,6 +30,8 @@ export const stockResponseFromApi = (json) => {
     stockQty: toInt(item?.stock_qty),
     targetQty: toInt(item?.target_qty),
     soldToday: toInt(item?.sold_today),
+    // all-time paid sale quantity for the category
+    totalSold: toInt(item?.total_sold),
     percentOfTarget: toNullableNumber(item?.percent_of_target),
   }));
 
