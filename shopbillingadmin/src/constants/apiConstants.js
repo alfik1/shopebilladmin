@@ -41,6 +41,17 @@ export const API_ENDPOINTS = {
     SALARY_HISTORY: (id) =>
       `${BASE_URL}/api/mobile/employees/${id}/salary-history/`,
   },
+
+  EXPENSES: {
+    // GET
+    CATEGORIES: `${BASE_URL}/api/mobile/expense-categories/`,
+
+    // GET ?month=YYYY-MM  |  ?date=YYYY-MM-DD
+    LIST:       `${BASE_URL}/api/mobile/expenses/`,
+
+    // GET ?month=YYYY-MM  |  ?date=YYYY-MM-DD
+    SUMMARY:    `${BASE_URL}/api/mobile/expenses/summary/`,
+  },
 };
 
 export const STORAGE_KEYS = {

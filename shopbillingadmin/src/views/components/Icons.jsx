@@ -187,3 +187,11 @@ export const IconShare = ({ size = 16, color = 'currentColor' }) => (
     <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
   </svg>
 );
+
+export const IconExpense = ({ size = 20, color = 'currentColor' }) => (
+  <svg {...base(size, color)}>
+    <rect x="2.5" y="6" width="19" height="12" rx="2" />
+    <circle cx="12" cy="12" r="2.8" />
+    <path d="M6 9.5v.01M18 14.5v.01" />
+  </svg>
+);

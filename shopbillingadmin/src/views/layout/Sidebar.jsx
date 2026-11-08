@@ -1,6 +1,15 @@
 import { NavLink } from 'react-router-dom';
 import { APP_ROUTES } from '../../routes/appRoutes';
-import { IconHome, IconHistory, IconStock, IconCollection, IconProfile, IconLogout, IconClose } from '../components/Icons';
+import {
+  IconHome,
+  IconHistory,
+  IconStock,
+  IconCollection,
+  IconExpense,
+  IconProfile,
+  IconLogout,
+  IconClose,
+} from '../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
@@ -8,6 +17,7 @@ const NAV_ITEMS = [
   { to: APP_ROUTES.history, label: 'History', Icon: IconHistory },
   { to: APP_ROUTES.stock, label: 'Stock', Icon: IconStock },
   { to: APP_ROUTES.collection, label: 'Collection', Icon: IconCollection },
+  { to: APP_ROUTES.expenses, label: 'Expenses', Icon: IconExpense },
   { to: APP_ROUTES.profile, label: 'Profile', Icon: IconProfile },
 ];
 

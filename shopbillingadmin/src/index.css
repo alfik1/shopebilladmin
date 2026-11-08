@@ -966,3 +966,192 @@ select.input {
   .sheet-body, .confirm-dialog { padding: 18px; }
   .stock-summary-grid { grid-template-columns: 1fr; }
 }
+/* ============================================================
+   EXPENSES PAGE (read-only)
+   ============================================================ */
+
+.expenses-page { width: 100%; min-width: 0; }
+
+.exp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.exp-tabs { display: flex; gap: 8px; }
+
+.exp-tab {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  transition: all .15s ease;
+}
+
+.exp-tab:hover { border-color: #C9D5FA; }
+
+.exp-tab.active {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: #fff;
+}
+
+.exp-picker {
+  height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  outline: none;
+  font-family: inherit;
+}
+
+.exp-picker:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(47,95,255,0.12);
+}
+
+/* summary cards */
+.exp-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.exp-stat {
+  border-radius: 20px;
+  padding: 18px;
+  color: var(--color-text);
+  min-width: 0;
+}
+
+.exp-stat.purple { background: #D9D2FF; }
+.exp-stat.blue   { background: #C6DBFA; }
+.exp-stat.green  { background: #C7EFD8; }
+.exp-stat.lime   { background: #DCF59A; }
+
+.exp-stat-label { font-size: 12.5px; font-weight: 700; opacity: 0.8; }
+
+.exp-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 10px 0 4px;
+}
+
+.exp-stat-value.small {
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 14px 0 6px;
+}
+
+.exp-stat-sub { font-size: 11.5px; opacity: 0.7; font-weight: 500; }
+
+/* by category */
+.exp-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.exp-cat-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(15,17,23,0.03);
+  min-width: 0;
+}
+
+.exp-cat-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exp-cat-amount {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 8px 0 4px;
+}
+
+.exp-cat-count { font-size: 11.5px; color: var(--color-text-secondary); font-weight: 500; }
+
+/* table */
+.exp-table-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(15,17,23,0.03);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.exp-table-scroll { overflow-x: auto; padding: 6px 20px 10px; }
+
+.exp-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+
+.exp-table th {
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.exp-table td {
+  padding: 14px 10px;
+  font-size: 13.5px;
+  border-bottom: 1px solid #F4F5F9;
+  color: var(--color-text);
+}
+
+.exp-table tr:last-child td { border-bottom: none; }
+
+.exp-table .right { text-align: right; }
+.exp-table td.amount { font-weight: 800; }
+.exp-table td.note { color: var(--color-text-secondary); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.exp-chip {
+  display: inline-block;
+  background: #F1F3F8;
+  color: #525868;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .exp-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .exp-toolbar { flex-direction: column; align-items: stretch; }
+  .exp-picker { width: 100%; }
+  .exp-tabs .exp-tab { flex: 1; }
+  .exp-stat { padding: 14px; }
+  .exp-stat-value { font-size: 22px; }
+  .exp-table-scroll { padding: 4px 12px 8px; }
+  .exp-cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

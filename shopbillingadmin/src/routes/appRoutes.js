@@ -6,6 +6,7 @@ export const APP_ROUTES = {
   history: '/history',
   stock: '/stock',
   collection: '/collection',
+  expenses: '/expenses',
   profile: '/profile',
   addEmployee: '/add-employee',
   employeeSalary: (id) => `/employees/${id}/salary`,
