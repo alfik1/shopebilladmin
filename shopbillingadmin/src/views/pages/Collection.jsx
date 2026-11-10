@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { getCollection, formatBillTime } from '../../controllers/collectionController';
+import { useEffect, useState } from 'react';
+import {
+  getCollectionOverview,
+  formatBillTime,
+  formatDateForApi,
+} from '../../controllers/collectionController';
 import { COLORS } from '../../constants/colors';
 import CategoryIcon, { backgroundForKey } from '../components/CategoryIcon';
 import {
@@ -12,27 +16,103 @@ import {
   IconReceipt,
 } from '../components/Icons';
 
+// ------------------------------------------------------------
+// Invisible date input laid over a button.
+// The tap goes straight to the native date picker, which is what
+// makes it work on phones. showPicker() is for desktop browsers.
+// ------------------------------------------------------------
+const overlayStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: '100%',
+  height: '100%',
+  margin: 0,
+  padding: 0,
+  border: 'none',
+  opacity: 0,
+  cursor: 'pointer',
+  zIndex: 2,
+};
+
+const groupTitleStyle = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 8,
+  padding: '4px 0 10px',
+};
+
+// ------------------------------------------------------------
+// UPI + Cash rows for one group (day or month)
+// ------------------------------------------------------------
+function PaymentRows({ upi, cash }) {
+  const total = upi + cash;
+  const upiPercent = total === 0 ? 0 : Math.round((upi / total) * 100);
+  const cashPercent = total === 0 ? 0 : Math.round((cash / total) * 100);
+
+  return (
+    <>
+      <div className="payment-row">
+        <div className="payment-row-icon" style={{ background: `${COLORS.upiColor}1F` }}>
+          <IconQr size={18} color={COLORS.upiColor} />
+        </div>
+        <span className="payment-row-label">UPI Collection</span>
+        <span className="payment-row-amount">₹{upi.toFixed(0)}</span>
+        <span
+          className="payment-row-percent"
+          style={{ background: `${COLORS.upiColor}1F`, color: COLORS.upiColor }}
+        >
+          {upiPercent}%
+        </span>
+      </div>
+
+      <div className="payment-divider" />
+
+      <div className="payment-row">
+        <div className="payment-row-icon" style={{ background: `${COLORS.cashColor}1F` }}>
+          <IconCash size={18} color={COLORS.cashColor} />
+        </div>
+        <span className="payment-row-label">Cash Collection</span>
+        <span className="payment-row-amount">₹{cash.toFixed(0)}</span>
+        <span
+          className="payment-row-percent"
+          style={{ background: `${COLORS.cashColor}1F`, color: COLORS.cashColor }}
+        >
+          {cashPercent}%
+        </span>
+      </div>
+    </>
+  );
+}
+
 export default function Collection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [data, setData] = useState(null);
 
-  const [period, setPeriod] = useState('today');
+  const [data, setData] = useState(null);           // selected day (or today)
+  const [monthData, setMonthData] = useState(null); // full month of that day
+
+  // null = today
   const [selectedDate, setSelectedDate] = useState(null);
 
-  const dateInputRef = useRef(null);
+  const todayValue = formatDateForApi(new Date());
+  const pickerValue = selectedDate ? formatDateForApi(selectedDate) : todayValue;
 
-  const load = async (nextPeriod, nextDate) => {
+  const load = async (nextDate) => {
     console.log('########################################');
-    console.log('[Collection] LOAD START', nextPeriod, nextDate);
+    console.log('[Collection] LOAD START', nextDate);
 
     setLoading(true);
     setError('');
 
     try {
-      const result = await getCollection({ period: nextPeriod, date: nextDate });
+      const result = await getCollectionOverview({ date: nextDate });
       console.log('[Collection] loaded:', result);
-      setData(result);
+      setData(result.day);
+      setMonthData(result.month);
     } catch (err) {
       console.error('[Collection] LOAD ERROR:', err);
       setError(err.message || 'Unable to load collection.');
@@ -44,23 +124,39 @@ export default function Collection() {
   };
 
   useEffect(() => {
-    load('today', null);
+    load(null);
   }, []);
-
-  const handlePickDateClick = () => {
-    dateInputRef.current?.showPicker?.();
-    dateInputRef.current?.click();
-  };
 
   const handleDateChange = (e) => {
     const value = e.target.value;
     if (!value) return;
 
     const date = new Date(`${value}T00:00:00`);
-    setPeriod('date');
     setSelectedDate(date);
-    load('date', date);
+    load(date);
   };
+
+  // Desktop browsers only open the calendar from the icon,
+  // so open it on click as well (harmless on phones).
+  const handleDateClick = (e) => {
+    try {
+      e.currentTarget.showPicker?.();
+    } catch (err) {
+      // picker already open or not allowed, nothing to do
+    }
+  };
+
+  const renderDateInput = () => (
+    <input
+      type="date"
+      aria-label="Choose date"
+      value={pickerValue}
+      max={todayValue}
+      onChange={handleDateChange}
+      onClick={handleDateClick}
+      style={overlayStyle}
+    />
+  );
 
   if (loading) {
     return (
@@ -76,7 +172,7 @@ export default function Collection() {
         <div className="home-error">
           <IconAlert color={COLORS.error} />
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={() => load(period, selectedDate)}>
+          <button className="btn btn-primary" onClick={() => load(selectedDate)}>
             Retry
           </button>
         </div>
@@ -86,27 +182,20 @@ export default function Collection() {
 
   if (!data) return null;
 
-  const paymentTotal = data.upiTotal + data.cashTotal;
-  const upiPercent = paymentTotal === 0 ? 0 : Math.round((data.upiTotal / paymentTotal) * 100);
-  const cashPercent = paymentTotal === 0 ? 0 : Math.round((data.cashTotal / paymentTotal) * 100);
-
   return (
     <div className="collection-page">
       {/* ---------- SUMMARY CARD ---------- */}
       <div className="sales-card">
         <div className="sales-card-head">
           <span className="sales-card-label">Total Collection</span>
-          <button className="sales-month-pill clickable" onClick={handlePickDateClick}>
-            {data.filterLabel}
-            <IconCalendar size={13} color="#fff" />
-          </button>
-          <input
-            ref={dateInputRef}
-            type="date"
-            className="hidden-date-input"
-            max={new Date().toISOString().slice(0, 10)}
-            onChange={handleDateChange}
-          />
+
+          <span style={{ position: 'relative', display: 'inline-flex' }}>
+            <button type="button" className="sales-month-pill clickable">
+              {data.filterLabel}
+              <IconCalendar size={13} color="#fff" />
+            </button>
+            {renderDateInput()}
+          </span>
         </div>
 
         <div className="sales-total">₹{data.totalCollection.toFixed(2)}</div>
@@ -131,14 +220,52 @@ export default function Collection() {
             <div className="stat-chip-value">₹{data.totalProfit.toFixed(0)}</div>
           </div>
         </div>
+
+        {/* ---------- FULL MONTH TOTAL (inside the card) ---------- */}
+        {monthData && (
+          <div
+            style={{
+              marginTop: 16,
+              paddingTop: 14,
+              borderTop: '1px solid rgba(255, 255, 255, 0.25)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'space-between',
+                gap: 8,
+                flexWrap: 'wrap',
+              }}
+            >
+              <span className="sales-card-label">{monthData.filterLabel} Total</span>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#fff' }}>
+                ₹{monthData.totalCollection.toFixed(2)}
+              </span>
+            </div>
+
+            <div style={{ fontSize: 12, color: '#fff', opacity: 0.85, marginTop: 4 }}>
+              {monthData.billCount} bills • Profit ₹{monthData.totalProfit.toFixed(0)}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ---------- ACTION BUTTONS ---------- */}
       <div className="action-row">
-        <button className="action-btn" onClick={handlePickDateClick}>
-          <IconCalendar size={16} color="#fff" />
-          Choose Date
-        </button>
+        <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+          <button
+            type="button"
+            className="action-btn"
+            style={{ flex: 1, width: '100%' }}
+          >
+            <IconCalendar size={16} color="#fff" />
+            Choose Date
+          </button>
+          {renderDateInput()}
+        </div>
+
         <button className="action-btn">
           <IconShare size={16} color="#fff" />
           Export Report
@@ -186,29 +313,58 @@ export default function Collection() {
       </div>
 
       <div className="payment-card">
-        <div className="payment-row">
-          <div className="payment-row-icon" style={{ background: `${COLORS.upiColor}1F` }}>
-            <IconQr size={18} color={COLORS.upiColor} />
-          </div>
-          <span className="payment-row-label">UPI Collection</span>
-          <span className="payment-row-amount">₹{data.upiTotal.toFixed(0)}</span>
-          <span className="payment-row-percent" style={{ background: `${COLORS.upiColor}1F`, color: COLORS.upiColor }}>
-            {upiPercent}%
+        {/* selected day / today */}
+        <div style={groupTitleStyle}>
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: 0.4,
+              textTransform: 'uppercase',
+              color: COLORS.textSecondary,
+            }}
+          >
+            {data.filterLabel}
+          </span>
+          <span style={{ fontSize: 15, fontWeight: 800 }}>
+            ₹{data.totalCollection.toFixed(0)}
           </span>
         </div>
 
-        <div className="payment-divider" />
+        <PaymentRows upi={data.upiTotal} cash={data.cashTotal} />
 
-        <div className="payment-row">
-          <div className="payment-row-icon" style={{ background: `${COLORS.cashColor}1F` }}>
-            <IconCash size={18} color={COLORS.cashColor} />
-          </div>
-          <span className="payment-row-label">Cash Collection</span>
-          <span className="payment-row-amount">₹{data.cashTotal.toFixed(0)}</span>
-          <span className="payment-row-percent" style={{ background: `${COLORS.cashColor}1F`, color: COLORS.cashColor }}>
-            {cashPercent}%
-          </span>
-        </div>
+        {/* full month */}
+        {monthData && (
+          <>
+            <div
+              style={{
+                height: 1,
+                background: COLORS.textSecondary,
+                opacity: 0.25,
+                margin: '14px 0 10px',
+              }}
+            />
+
+            <div style={groupTitleStyle}>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: 0.4,
+                  textTransform: 'uppercase',
+                  color: COLORS.textSecondary,
+                }}
+              >
+                {monthData.filterLabel} (Full Month)
+              </span>
+              <span style={{ fontSize: 15, fontWeight: 800 }}>
+                ₹{monthData.totalCollection.toFixed(0)}
+              </span>
+            </div>
+
+            <PaymentRows upi={monthData.upiTotal} cash={monthData.cashTotal} />
+          </>
+        )}
       </div>
 
       {/* ---------- BILLS ---------- */}

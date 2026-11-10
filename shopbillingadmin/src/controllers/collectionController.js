@@ -171,3 +171,31 @@ export const getCollection = async ({ period, date, month } = { period: 'today' 
     throw new CollectionError('Unable to load collection.');
   }
 };
+
+// ------------------------------------------------------------
+// GET COLLECTION OVERVIEW
+// The selected day (or today) AND the full month of that day.
+//   date = null  -> today + this month
+//   date = Date  -> that date + that date's month
+// If the month request fails, the day still loads (month = null).
+// ------------------------------------------------------------
+export const getCollectionOverview = async ({ date } = {}) => {
+  const base = date || new Date();
+
+  const monthStart = new Date(base.getFullYear(), base.getMonth(), 1);
+
+  console.log('[CollectionController] OVERVIEW', {
+    date: date ? formatDateForApi(date) : 'today',
+    month: formatMonthForApi(monthStart),
+  });
+
+  const [day, month] = await Promise.all([
+    getCollection(date ? { period: 'date', date } : { period: 'today' }),
+    getCollection({ period: 'month', month: monthStart }).catch((err) => {
+      console.warn('[CollectionController] Month totals failed:', err);
+      return null;
+    }),
+  ]);
+
+  return { day, month };
+};
